@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Gravel Road Grill | Chattanooga, TN</title>
+    <meta name="description" content="Authentic Southern Soul Food in Chattanooga. Home of the famous Soul Bowl.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="favicon.svg">
+
+    <!-- Fonts: Oswald for strong headers (matches logo), Roboto for readable body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'grill-black': '#111111',   /* Deep Charcoal/Black background */
+                        'grill-dark': '#1A1A1A',    /* Secondary Dark */
+                        'grill-gold': '#FFC107',    /* Matches "GRAVEL ROAD" text */
+                        'grill-red': '#D32F2F',     /* Matches the Truck/Flames */
+                        'grill-white': '#F5F5F5',   /* Off-white for text */
+                        'grill-gray': '#424242',
+                    },
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                        display: ['Oswald', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'asphalt': "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.15%22/%3E%3C/svg%3E')",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Styles -->
+    <style>
+        body {
+            background-color: #111111;
+            color: #F5F5F5;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Asphalt Texture Overlay */
+        .texture-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+        }
+
+        /* Custom Cursor */
+        .cursor-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #FFC107; /* Gold Dot */
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 10000;
+            pointer-events: none;
+        }
+
+        .cursor-outline {
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(255, 193, 7, 0.3); /* Gold Outline */
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+
+        body.hovering .cursor-outline {
+            width: 70px;
+            height: 70px;
+            background-color: rgba(211, 47, 47, 0.2); /* Red tint on hover */
+            border-color: #D32F2F;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .cursor-dot, .cursor-outline { display: none; }
+            body { cursor: auto; }
+            #fireCanvas { display: none; } /* Disable fire effect on touch devices for performance */
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 640px) {
+            .clip-path-slant {
+                clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            }
+        }
+
+        /* Mobile menu styles */
+        .mobile-menu-open {
+            display: flex !important;
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 1rem;
+        }
+
+        .mobile-menu-open li {
+            width: 100%;
+        }
+
+        .mobile-menu-open li a {
+            display: block;
+            padding: 0.75rem 0;
+            text-align: center;
+        }
+
+        /* Loading Screen */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #111111;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader-bar {
+            width: 0%;
+            height: 4px;
+            background: #FFC107;
+            margin-top: 20px;
+        }
+
+        /* Utilities */
+        .text-outline {
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.2);
+            color: transparent;
+        }
+
+        .clip-path-slant {
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+        }
+
+        .floating-input {
+            background: transparent;
+            border-bottom: 2px solid #424242;
+            color: #fff;
+            padding: 1rem 0;
+            width: 100%;
+            outline: none;
+            font-family: 'Oswald', sans-serif;
+            letter-spacing: 1px;
+            transition: border-color 0.3s;
+        }
+        .floating-input:focus {
+            border-color: #FFC107;
+        }
+        .input-group { position: relative; margin-bottom: 2rem; }
+        .input-label {
+            position: absolute;
+            top: 1rem;
+            left: 0;
+            color: #888;
+            pointer-events: none;
+            transition: 0.3s ease all;
+            font-family: 'Roboto', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        .floating-input:focus ~ .input-label,
+        .floating-input:not(:placeholder-shown) ~ .input-label {
+            top: -12px;
+            font-size: 0.7rem;
+            color: #FFC107;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-grill-gold selection:text-grill-black">
+
+    <div class="texture-overlay"></div>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- ADDED: Fire Effect Canvas -->
+    <canvas id="fireCanvas" class="fixed inset-0 w-full h-full pointer-events-none z-[9998]"></canvas>
+
+    <!-- Preloader (UPDATED) -->
+    <div id="loader">
+        <div class="relative w-full max-w-4xl h-48 md:h-64 flex items-center justify-center overflow-hidden">
+            <svg class="w-full h-full" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+                <!-- 1. Background / Base -->
+                <rect width="100%" height="100%" fill="#111111" />
+
+                <!-- 2. The Fire Waves (BEHIND the text now) -->
+                <g id="fire-group">
+                    <!-- Back Wave (Dark Red) -->
+                    <path id="wave1" fill="#8B0000" opacity="0.8" d="M0,200 Q200,150 400,200 T800,200 V200 H0 Z" />
+                    <!-- Middle Wave (Brand Red) -->
+                    <path id="wave2" fill="#D32F2F" opacity="0.9" d="M0,200 Q200,180 400,200 T800,200 V200 H0 Z" />
+                    <!-- Front Wave (Gold) -->
+                    <path id="wave3" fill="#FFC107" d="M0,200 Q200,190 400,200 T800,200 V200 H0 Z" />
+                </g>
+
+                <!-- 3. Text Overlay (IN FRONT) -->
+                <!-- Starts dark/outlined, fills with white/gold as it heats up -->
+                <!-- Responsive font size using viewBox scaling -->
+                <text id="loading-text" x="50%" y="50%" dy=".35em" text-anchor="middle" class="font-display font-bold uppercase tracking-tighter" style="font-size: 80px; fill: #222; stroke: #444; stroke-width: 1px; filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.9));">
+                    HEATING UP
+                </text>
+            </svg>
+        </div>
+
+        <div class="w-64 bg-gray-800 h-1 mt-4 rounded-full overflow-hidden relative z-10">
+            <div class="loader-bar h-full w-0"></div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full px-4 py-3 sm:px-6 sm:py-4 md:px-12 md:py-6 flex justify-between items-center z-40 bg-gradient-to-b from-black/90 to-transparent backdrop-blur-sm">
+        <a href="#" class="font-display text-lg sm:text-xl md:text-2xl font-bold uppercase tracking-tighter text-white hover:text-grill-gold transition-colors hoverable" data-cursor="magnetic">
+            <span class="hidden sm:inline">The Gravel Road</span>
+            <span class="sm:hidden">GR Grill</span>
+            <span class="text-grill-gold">.</span>
+        </a>
+
+        <button class="md:hidden text-white hoverable p-2 -mr-2" id="mobileMenuBtn" aria-label="Toggle menu">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+
+        <ul id="navMenu" class="hidden md:flex items-center space-y-6 md:space-y-0 md:space-x-8 lg:space-x-10 font-display text-sm uppercase tracking-widest text-gray-300">
+            <li><a href="#about" class="hover:text-grill-gold transition-colors hoverable">Our Story</a></li>
+            <li><a href="#menu" class="hover:text-grill-gold transition-colors hoverable">The Menu</a></li>
+            <li><a href="#find-us" class="hover:text-grill-gold transition-colors hoverable">Find Us</a></li>
+            <li>
+                <a href="#order" class="bg-grill-gold text-black px-6 py-2 skew-x-[-10deg] inline-block hover:bg-white hover:text-black transition-all duration-300 hoverable font-bold shadow-[0_0_15px_rgba(255,193,7,0.4)]" data-cursor="magnetic">
+                    <span class="inline-block skew-x-[10deg]">Order Now</span>
+                </a>
+            </li>
+            <li>
+                <a href="#catering" class="border border-grill-red text-grill-red px-6 py-2 skew-x-[-10deg] inline-block hover:bg-grill-red hover:text-white transition-all duration-300 hoverable font-bold" data-cursor="magnetic">
+                    <span class="inline-block skew-x-[10deg]">Catering</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative w-full h-screen flex items-center justify-center overflow-hidden">
+        <!-- Canvas for Ember Effect -->
+        <canvas id="emberCanvas" class="absolute inset-0 w-full h-full opacity-60"></canvas>
+
+        <div class="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-black/40 z-10"></div>
+
+        <div class="relative z-20 text-center px-4 sm:px-6 max-w-5xl">
+            <p class="text-grill-gold font-display uppercase tracking-[0.2em] sm:tracking-[0.3em] text-xs sm:text-sm md:text-base mb-3 sm:mb-4 reveal-hero">Southern Made • Soul Certified</p>
+            <h1 class="font-display text-5xl sm:text-6xl md:text-8xl lg:text-[10rem] leading-[0.85] sm:leading-[0.9] font-bold uppercase text-white mb-4 sm:mb-6 reveal-hero">
+                Taste The <br>
+                <span class="text-grill-red relative inline-block">
+                    Soul
+                    <svg class="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-2 sm:h-3 text-grill-gold opacity-80" viewBox="0 0 100 10" preserveAspectRatio="none">
+                        <path d="M0 5 Q 50 10 100 5" stroke="currentColor" stroke-width="3" fill="none" />
+                    </svg>
+                </span>
+            </h1>
+            <p class="font-sans text-gray-400 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-8 sm:mb-10 font-light px-2 reveal-hero">
+                Authentic Tennessee BBQ and Soul Bowls served curbside.
+                Look for the red truck and follow the smoke.
+            </p>
+            <div class="reveal-hero flex flex-col sm:flex-row gap-3 sm:gap-5 justify-center items-center px-4 sm:px-0">
+                <a href="#order" class="w-full sm:w-auto inline-block bg-grill-red text-white border-2 border-grill-red px-8 sm:px-10 py-3 sm:py-4 font-display uppercase tracking-wider sm:tracking-widest font-bold hover:bg-transparent hover:text-grill-red transition-all duration-300 hoverable transform hover:scale-105 shadow-[0_0_20px_rgba(211,47,47,0.5)] text-center" data-cursor="magnetic">
+                    Order Now
+                </a>
+                <a href="#menu" class="w-full sm:w-auto inline-block border-2 border-grill-gold text-grill-gold px-8 sm:px-10 py-3 sm:py-4 font-display uppercase tracking-wider sm:tracking-widest font-bold hover:bg-grill-gold hover:text-black transition-all duration-300 hoverable transform hover:scale-105 text-center">
+                    View Menu
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- About Section (Badge Style) -->
+    <section id="about" class="py-16 sm:py-24 bg-grill-dark relative overflow-hidden clip-path-slant">
+        <div class="absolute top-0 right-0 w-1/2 h-full bg-[#161616] transform skew-x-[-12deg] translate-x-32 hidden lg:block pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center relative z-10">
+            <div class="relative max-w-sm mx-auto lg:max-w-none">
+                <!-- Abstract representation of the Cup Logo Badge -->
+                <div class="w-full aspect-square border-4 border-grill-gold/20 rounded-full flex items-center justify-center p-4 sm:p-8 relative">
+                    <div class="absolute inset-0 rounded-full border border-grill-gold/10 animate-[spin_10s_linear_infinite]"></div>
+                    <div class="text-center space-y-1 sm:space-y-2">
+                        <div class="text-grill-white font-display text-base sm:text-xl tracking-widest">EST. 2020</div>
+                        <div class="text-grill-gold font-display text-4xl sm:text-6xl md:text-8xl font-bold uppercase leading-none">Gravel<br>Road</div>
+                        <div class="text-grill-red font-display text-2xl sm:text-4xl uppercase font-bold tracking-widest">Grill</div>
+                        <div class="text-gray-500 font-sans text-xs sm:text-sm tracking-[0.2em] mt-2 sm:mt-4">CHATTANOOGA, TN</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <h2 class="font-display text-4xl md:text-6xl uppercase font-bold text-white">
+                    Not Fast Food. <br>
+                    <span class="text-outline text-grill-red">Good Food Fast.</span>
+                </h2>
+                <div class="w-20 h-1 bg-grill-gold"></div>
+                <p class="font-sans text-gray-400 text-lg leading-relaxed">
+                    We don't do shortcuts. Our food is built layer by layer—starting with golden cornbread, piled high with slow-cooked meats, beans, and fresh sides. It's the kind of meal that sticks to your ribs and warms your soul.
+                </p>
+                <div class="grid grid-cols-2 gap-8 pt-6">
+                    <div>
+                        <span class="block font-display text-4xl text-grill-gold font-bold counter" data-target="12">0</span>
+                        <span class="text-sm text-gray-500 uppercase tracking-wider">Hours Smoked</span>
+                    </div>
+                    <div>
+                        <span class="block font-display text-4xl text-grill-gold font-bold counter" data-target="100">0</span>
+                        <span class="text-sm text-gray-500 uppercase tracking-wider">% Soul Certified</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Menu Section (UPDATED) -->
+    <section id="menu" class="py-16 sm:py-24 bg-[#111111] relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-10 sm:mb-16">
+                <span class="text-grill-red font-display uppercase tracking-widest text-xs sm:text-sm font-bold">The Real Deal</span>
+                <h2 class="font-display text-4xl sm:text-5xl md:text-7xl uppercase font-bold text-white mt-2">The Menu</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+
+                <!-- Column 1: Chicken & Smash -->
+                <div class="space-y-8 sm:space-y-12">
+                    <!-- Chicken Category -->
+                    <div class="menu-category group">
+                        <h3 class="font-display text-2xl sm:text-3xl text-grill-gold uppercase font-bold mb-4 sm:mb-6 border-b border-gray-800 pb-2">Chicken</h3>
+                        <div class="space-y-5 sm:space-y-6">
+                            <div class="hoverable">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h4 class="font-display text-lg sm:text-xl text-white font-bold uppercase">Crispy Chx Strips</h4>
+                                    <span class="font-display text-grill-red font-bold text-base sm:text-lg shrink-0">$10</span>
+                                </div>
+                                <p class="font-sans text-gray-400 text-sm">Golden, hand-battered, and fried with love. Crispy outside, tender inside.</p>
+                            </div>
+                            <div class="hoverable">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h4 class="font-display text-lg sm:text-xl text-white font-bold uppercase">Red Clay Spicy Chx Sand</h4>
+                                    <span class="font-display text-grill-red font-bold text-base sm:text-lg shrink-0">$12</span>
+                                </div>
+                                <p class="font-sans text-gray-400 text-sm">Fiery, crispy chicken breast coated in signature Red Clay seasoning, topped with cool fixings on a soft bun.</p>
+                            </div>
+                            <div class="hoverable">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h4 class="font-display text-lg sm:text-xl text-white font-bold uppercase">Honey Bun Chx Sand</h4>
+                                    <span class="font-display text-grill-red font-bold text-base sm:text-lg shrink-0">$15</span>
+                                </div>
+                                <p class="font-sans text-gray-400 text-sm">Sweet & savory experience. Crispy golden chicken topped with bacon between warm glazed honey buns.</p>
+                            </div>
+                            <div class="hoverable">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h4 class="font-display text-lg sm:text-xl text-white font-bold uppercase">The Crispy Crown</h4>
+                                    <span class="font-display text-grill-red font-bold text-base sm:text-lg shrink-0">$16</span>
+                                </div>
+                                <p class="font-sans text-gray-400 text-sm">A Southern-style stack of crispy fried chicken, creamy mac & cheese, and crumbled cornbread with hot sauce drizzle.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Smash Category -->
+                    <div class="menu-category group">
+                        <h3 class="font-display text-2xl sm:text-3xl text-grill-gold uppercase font-bold mb-4 sm:mb-6 border-b border-gray-800 pb-2">Smash Burgers</h3>
+                        <div class="space-y-5 sm:space-y-6">
+                            <div class="hoverable">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h4 class="font-display text-lg sm:text-xl text-white font-bold uppercase">The Original Smash Burger</h4>
+                                    <span class="font-display text-grill-red font-bold text-base sm:text-lg shrink-0">$13</span>
+                                </div>
+                                <p class="font-sans text-gray-400 text-sm">A classic done right. Crispy-edged, juicy centered beef smashed on the grill with melted cheese.</p>
+                            </div>
+                            <div class="hoverable">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h4 class="font-display text-lg sm:text-xl text-white font-bold uppercase">Puerto Rican Smash Burger</h4>
+                                    <span class="font-display text-grill-red font-bold text-base sm:text-lg shrink-0">$14</span>
+                                </div>
+                                <p class="font-sans text-gray-400 text-sm">Loaded with island flavor. Crispy patty, melted cheese, and a bold punch of seasoning.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                     <!-- Sides Category -->
+                     <div class="menu-category group">
+                        <h3 class="font-display text-2xl sm:text-3xl text-grill-gold uppercase font-bold mb-4 sm:mb-6 border-b border-gray-800 pb-2">Sides</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div class="flex justify-between items-baseline gap-2 border-b border-gray-800 pb-2 hoverable">
+                                <span class="font-sans text-gray-300 text-sm sm:text-base">Downhome Country Fries</span>
+                                <span class="font-display text-grill-red font-bold shrink-0">$5</span>
+                            </div>
+                            <div class="flex justify-between items-baseline gap-2 border-b border-gray-800 pb-2 hoverable">
+                                <span class="font-sans text-gray-300 text-sm sm:text-base">Granny's Cornbread</span>
+                                <span class="font-display text-grill-red font-bold shrink-0">$4</span>
+                            </div>
+                            <div class="flex justify-between items-baseline gap-2 border-b border-gray-800 pb-2 hoverable">
+                                <span class="font-sans text-gray-300 text-sm sm:text-base">Empanadas</span>
+                                <span class="font-display text-grill-red font-bold shrink-0">$5</span>
+                            </div>
+                             <div class="col-span-1 sm:col-span-2 hoverable pt-2">
+                                <div class="flex justify-between items-baseline gap-2">
+                                    <span class="font-sans text-white font-bold text-sm sm:text-base">Jacks Mac & Cheese</span>
+                                    <span class="font-display text-grill-red font-bold shrink-0">$6</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Creamy, dreamy, and downright dangerous. Baked with love.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column 2: BBQ, Drinks, Desserts -->
+                <div class="space-y-8 sm:space-y-12">
+                     <!-- BBQ Category -->
+                     <div class="menu-category group">
+                        <h3 class="font-display text-2xl sm:text-3xl text-grill-gold uppercase font-bold mb-4 sm:mb-6 border-b border-gray-800 pb-2">BBQ</h3>
+                        <div class="space-y-5 sm:space-y-6">
+                            <div class="hoverable">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h4 class="font-display text-lg sm:text-xl text-white font-bold uppercase">BBQ Pulled Pork</h4>
+                                    <span class="font-display text-grill-red font-bold text-base sm:text-lg shrink-0">$8</span>
+                                </div>
+                            </div>
+                            <div class="hoverable">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h4 class="font-display text-lg sm:text-xl text-white font-bold uppercase">BBQ Sandwich</h4>
+                                    <span class="font-display text-grill-red font-bold text-base sm:text-lg shrink-0">$10</span>
+                                </div>
+                            </div>
+                            <div class="hoverable">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h4 class="font-display text-lg sm:text-xl text-white font-bold uppercase">Brunswick Stew</h4>
+                                    <span class="font-display text-grill-red font-bold text-sm sm:text-lg shrink-0">$5 / $10</span>
+                                </div>
+                            </div>
+                            <div class="hoverable">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h4 class="font-display text-lg sm:text-xl text-white font-bold uppercase">Stacked Mac BBQ Fries</h4>
+                                    <span class="font-display text-grill-red font-bold text-base sm:text-lg shrink-0">$15</span>
+                                </div>
+                                <p class="font-sans text-gray-400 text-sm">A heap of homemade fries loaded with smoky pulled pork, creamy mac & cheese, and house BBQ sauce.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Drinks Category -->
+                    <div class="menu-category group">
+                        <h3 class="font-display text-2xl sm:text-3xl text-grill-gold uppercase font-bold mb-4 sm:mb-6 border-b border-gray-800 pb-2">Drinks</h3>
+                        <div class="space-y-3 sm:space-y-4">
+                            <div class="flex justify-between items-baseline gap-2 hoverable">
+                                <span class="font-sans text-gray-300 text-base sm:text-lg">Soda</span>
+                                <span class="font-display text-grill-red font-bold shrink-0">$3</span>
+                            </div>
+                            <div class="flex justify-between items-baseline gap-2 hoverable">
+                                <span class="font-sans text-gray-300 text-base sm:text-lg">Water</span>
+                                <span class="font-display text-grill-red font-bold shrink-0">$3</span>
+                            </div>
+                            <div class="hoverable pt-2">
+                                <div class="flex justify-between items-start gap-2">
+                                    <span class="font-sans text-white font-bold text-base sm:text-lg">32 OZ Lisha's Lemonade</span>
+                                    <span class="font-display text-grill-red font-bold shrink-0">$6</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">A whole quart of sunshine. Fresh-squeezed, lightly sweet. (Add Flavor +$1)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Desserts Category -->
+                    <div class="menu-category group">
+                        <h3 class="font-display text-2xl sm:text-3xl text-grill-gold uppercase font-bold mb-4 sm:mb-6 border-b border-gray-800 pb-2">Desserts</h3>
+                        <div class="space-y-5 sm:space-y-6">
+                            <div class="hoverable">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h4 class="font-display text-base sm:text-xl text-white font-bold uppercase leading-tight">Double Crusted Sweet Potato Pie</h4>
+                                    <span class="font-display text-grill-red font-bold text-base sm:text-lg shrink-0">$6</span>
+                                </div>
+                                <p class="font-sans text-gray-400 text-sm">Sweet potato bliss wrapped in two golden, flaky crusts topped with smooth vanilla icing.</p>
+                            </div>
+                            <div class="hoverable">
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <h4 class="font-display text-base sm:text-xl text-white font-bold uppercase leading-tight">Deep Fried Honey Bun Pop Tart</h4>
+                                    <span class="font-display text-grill-red font-bold text-base sm:text-lg shrink-0">$7</span>
+                                </div>
+                                <p class="font-sans text-gray-400 text-sm">A honey bun and Pop Tart fused with icing, deep fried to golden perfection.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Location / Map -->
+    <section id="find-us" class="min-h-[50vh] sm:h-[60vh] relative flex items-center bg-gray-900 group py-8 sm:py-0">
+        <!-- Google Map (Grayscale/Dark Mode) -->
+        <iframe
+            class="absolute inset-0 w-full h-full grayscale invert contrast-125 opacity-40 sm:opacity-60 group-hover:opacity-80 transition-opacity duration-700"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2304.219602278376!2d25.2900003!3d54.7200003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46dd96e7d814e749%3A0x8b37537551065b7!2sKalvarij%C5%B3%20g.%202A-2%2C%20Vilnius%2C%2009309%20Vilniaus%20m.%20sav.!5e0!3m2!1sen!2slt!4v1625680000000!5m2!1sen!2slt"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy">
+        </iframe>
+
+        <div class="relative z-10 container mx-auto px-4 sm:px-6 pointer-events-none">
+            <div class="bg-black/95 sm:bg-black/90 p-6 sm:p-10 border-l-4 border-grill-gold max-w-md pointer-events-auto transform translate-y-0 group-hover:-translate-y-2 transition-transform duration-500 mx-auto sm:mx-0">
+                <h3 class="font-display text-2xl sm:text-3xl uppercase font-bold text-white mb-2">Find The Truck</h3>
+                <p class="text-grill-red font-bold uppercase tracking-widest text-xs sm:text-sm mb-4 sm:mb-6">Current Location</p>
+                <div class="space-y-3 sm:space-y-4 font-sans text-gray-300 text-sm sm:text-base">
+                    <p class="flex items-center"><span class="w-2 h-2 bg-grill-gold rounded-full mr-3 shrink-0"></span>Kalvarijų g. 2a-2, Vilnius</p>
+                    <p class="flex items-center"><span class="w-2 h-2 bg-grill-gold rounded-full mr-3 shrink-0"></span>Tue - Sat: 11am - Sold Out</p>
+                </div>
+                <a href="https://maps.google.com" target="_blank" class="mt-6 sm:mt-8 inline-block bg-white text-black font-bold uppercase text-sm px-6 py-3 hover:bg-grill-gold transition-colors hoverable w-full sm:w-auto text-center">
+                    Get Directions
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Catering Form -->
+    <section id="catering" class="py-16 sm:py-24 bg-grill-dark relative overflow-hidden">
+        <!-- Decorative Grill Lines -->
+        <div class="absolute inset-0 flex justify-center space-x-8 sm:space-x-12 opacity-5 pointer-events-none">
+            <div class="w-1 h-full bg-white"></div>
+            <div class="w-1 h-full bg-white"></div>
+            <div class="w-1 h-full bg-white hidden sm:block"></div>
+            <div class="w-1 h-full bg-white hidden sm:block"></div>
+            <div class="w-1 h-full bg-white hidden sm:block"></div>
+        </div>
+
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 relative z-10 text-center">
+            <h2 class="font-display text-3xl sm:text-5xl md:text-6xl uppercase font-bold text-white mb-3 sm:mb-4">Book The Truck</h2>
+            <p class="font-sans text-gray-400 mb-8 sm:mb-12 text-sm sm:text-base px-2">Private events, weddings, or just a big backyard party. We bring the flavor to you.</p>
+
+            <form name="catering" id="cateringForm" class="text-left space-y-6 sm:space-y-8 bg-[#111111] p-5 sm:p-8 md:p-12 border border-white/5 shadow-2xl">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                    <div class="input-group">
+                        <input type="text" id="name" class="floating-input text-base" placeholder=" " required>
+                        <label for="name" class="input-label">Your Name</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" id="email" class="floating-input text-base" placeholder=" " required>
+                        <label for="email" class="input-label">Email Address</label>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="type" class="floating-input text-base" placeholder=" " required>
+                    <label for="type" class="input-label text-xs sm:text-sm">Event Type (e.g. Wedding, Corporate)</label>
+                </div>
+
+                <div class="text-center pt-4 sm:pt-6">
+                    <button type="submit" class="bg-grill-red text-white font-display uppercase tracking-wider sm:tracking-widest font-bold text-base sm:text-lg px-8 sm:px-12 py-3 sm:py-4 hover:bg-white hover:text-grill-red transition-all duration-300 w-full hoverable" data-cursor="magnetic">
+                        Send Request
+                    </button>
+                    <p id="formStatus" class="mt-4 text-grill-gold font-sans text-sm opacity-0 transition-opacity">Message sent. We'll be in touch.</p>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black py-10 sm:py-16 px-4 sm:px-6 border-t border-white/10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-6 md:gap-0">
+            <div class="mb-4 md:mb-0">
+                <a href="#" class="font-display text-2xl sm:text-3xl font-bold uppercase tracking-tighter text-white">
+                    Gravel Road<span class="text-grill-red">.</span>
+                </a>
+                <p class="text-gray-500 font-sans text-xs sm:text-sm mt-2">Southern Made. Soul Certified.</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 md:gap-8 font-display uppercase tracking-wider text-xs sm:text-sm text-gray-400">
+                <a href="tel:4236052132" class="hover:text-white transition-colors hoverable text-grill-gold text-base sm:text-sm">423-605-2132</a>
+                <a href="mailto:GravelRoadGrill@outlook.com" class="hover:text-white transition-colors hoverable break-all sm:break-normal text-xs sm:text-sm">GravelRoadGrill@outlook.com</a>
+                <a href="#" class="hover:text-white transition-colors hoverable">Facebook</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GSAP Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 1. Loading Animation (UPDATED)
+        const loader = document.getElementById('loader');
+        const loaderBar = document.querySelector('.loader-bar');
+
+        window.addEventListener('load', () => {
+            // Animate Fire Waves (Moving higher to cover background)
+            const tl = gsap.timeline();
+
+            // Rise up animation - Increased height (y values)
+            tl.to("#wave1", { attr: { d: "M0,200 Q200,50 400,100 T800,0 V200 H0 Z" }, duration: 2, ease: "power1.inOut" }, 0);
+            tl.to("#wave2", { attr: { d: "M0,200 Q200,80 400,120 T800,20 V200 H0 Z" }, duration: 2.2, ease: "power1.inOut" }, 0.1);
+            tl.to("#wave3", { attr: { d: "M0,200 Q200,100 400,150 T800,50 V200 H0 Z" }, duration: 2.4, ease: "power1.inOut" }, 0.2);
+
+            // Wiggle animation loop
+            gsap.to("#wave1", { attr: { d: "M0,200 Q200,40 400,110 T800,-10 V200 H0 Z" }, duration: 1.5, repeat: -1, yoyo: true, ease: "sine.inOut" });
+            gsap.to("#wave2", { attr: { d: "M0,200 Q200,70 400,130 T800,30 V200 H0 Z" }, duration: 1.3, repeat: -1, yoyo: true, ease: "sine.inOut", delay: 0.2 });
+            gsap.to("#wave3", { attr: { d: "M0,200 Q200,90 400,140 T800,40 V200 H0 Z" }, duration: 1.1, repeat: -1, yoyo: true, ease: "sine.inOut", delay: 0.1 });
+
+            // Text "Lights Up" Animation
+            // Animates fill from dark to white, stroke to none.
+            gsap.to("#loading-text", {
+                fill: "#FFFFFF",
+                stroke: "none",
+                duration: 1.5,
+                delay: 0.5,
+                ease: "power2.out"
+            });
+
+            // Loading Bar & Exit
+            gsap.to(loaderBar, {
+                width: '100%',
+                duration: 2,
+                ease: "power2.inOut",
+                onComplete: () => {
+                    gsap.to(loader, {
+                        yPercent: -100,
+                        duration: 0.8,
+                        ease: "power4.inOut",
+                        delay: 0.5
+                    });
+
+                    // Trigger Hero Animations after loader moves
+                    gsap.from(".reveal-hero", {
+                        y: 100,
+                        opacity: 0,
+                        duration: 1,
+                        stagger: 0.2,
+                        delay: 0.8,
+                        ease: "power3.out"
+                    });
+                }
+            });
+        });
+
+        // 2. Custom Cursor Logic + Fire Effect
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+        const hoverables = document.querySelectorAll('.hoverable');
+
+        // Fire Canvas Setup - REALISTIC FLAMES
+        const fireCanvas = document.getElementById('fireCanvas');
+        const fCtx = fireCanvas.getContext('2d');
+        let fireWidth, fireHeight;
+        let flames = [];
+
+        function resizeFire() {
+            fireWidth = fireCanvas.width = window.innerWidth;
+            fireHeight = fireCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeFire);
+        resizeFire();
+
+        class Flame {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.originX = x;
+                this.size = Math.random() * 20 + 15; // Larger base
+                this.maxSize = this.size;
+                this.speedY = Math.random() * 4 + 3; // Rise faster
+                this.wobble = Math.random() * Math.PI * 2; // Random start phase
+                this.wobbleSpeed = Math.random() * 0.3 + 0.1;
+                this.wobbleAmount = Math.random() * 8 + 4;
+                this.life = 1.0;
+                this.decay = Math.random() * 0.025 + 0.015;
+                this.stretch = Math.random() * 0.5 + 1.2; // Vertical stretch for flame shape
+            }
+            update() {
+                this.y -= this.speedY;
+                this.wobble += this.wobbleSpeed;
+                this.x = this.originX + Math.sin(this.wobble) * this.wobbleAmount * this.life;
+                this.size = this.maxSize * this.life * 0.8;
+                this.life -= this.decay;
+                // Accelerate upward as flame rises
+                this.speedY += 0.05;
+            }
+            draw() {
+                if (this.life <= 0) return;
+
+                fCtx.save();
+                fCtx.translate(this.x, this.y);
+
+                // Create flame gradient
+                const gradient = fCtx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+
+                if (this.life > 0.7) {
+                    // Hot core - white/yellow
+                    gradient.addColorStop(0, `rgba(255, 255, 200, ${this.life})`);
+                    gradient.addColorStop(0.2, `rgba(255, 220, 50, ${this.life})`);
+                    gradient.addColorStop(0.5, `rgba(255, 150, 0, ${this.life * 0.9})`);
+                    gradient.addColorStop(0.8, `rgba(255, 80, 0, ${this.life * 0.7})`);
+                    gradient.addColorStop(1, `rgba(200, 30, 0, 0)`);
+                } else if (this.life > 0.4) {
+                    // Cooling - orange/red
+                    gradient.addColorStop(0, `rgba(255, 180, 50, ${this.life})`);
+                    gradient.addColorStop(0.3, `rgba(255, 100, 0, ${this.life * 0.9})`);
+                    gradient.addColorStop(0.6, `rgba(200, 50, 0, ${this.life * 0.7})`);
+                    gradient.addColorStop(1, `rgba(150, 20, 0, 0)`);
+                } else {
+                    // Dying ember - red/dark
+                    gradient.addColorStop(0, `rgba(255, 100, 30, ${this.life})`);
+                    gradient.addColorStop(0.4, `rgba(180, 40, 0, ${this.life * 0.8})`);
+                    gradient.addColorStop(1, `rgba(100, 10, 0, 0)`);
+                }
+
+                // Draw flame shape (elongated upward)
+                fCtx.beginPath();
+                fCtx.scale(1, this.stretch);
+                fCtx.arc(0, 0, this.size, 0, Math.PI * 2);
+                fCtx.fillStyle = gradient;
+
+                // Add glow effect
+                fCtx.shadowBlur = 20;
+                fCtx.shadowColor = this.life > 0.5 ? 'rgba(255, 150, 0, 0.8)' : 'rgba(200, 50, 0, 0.5)';
+
+                fCtx.fill();
+                fCtx.restore();
+            }
+        }
+
+        // Spark particles for extra realism
+        class Spark {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 3 + 1;
+                this.speedY = Math.random() * 6 + 4;
+                this.speedX = (Math.random() - 0.5) * 4;
+                this.life = 1.0;
+                this.decay = Math.random() * 0.08 + 0.04;
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                this.speedX *= 0.98;
+                this.life -= this.decay;
+            }
+            draw() {
+                if (this.life <= 0) return;
+                fCtx.beginPath();
+                fCtx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                fCtx.fillStyle = `rgba(255, 200, 50, ${this.life})`;
+                fCtx.shadowBlur = 8;
+                fCtx.shadowColor = 'rgba(255, 150, 0, 0.8)';
+                fCtx.fill();
+                fCtx.shadowBlur = 0;
+            }
+        }
+
+        let sparks = [];
+
+        function animateFireLoop() {
+            fCtx.clearRect(0, 0, fireWidth, fireHeight);
+
+            // Render flames
+            for (let i = flames.length - 1; i >= 0; i--) {
+                flames[i].update();
+                flames[i].draw();
+                if (flames[i].life <= 0) {
+                    flames.splice(i, 1);
+                }
+            }
+
+            // Render sparks
+            for (let i = sparks.length - 1; i >= 0; i--) {
+                sparks[i].update();
+                sparks[i].draw();
+                if (sparks[i].life <= 0) {
+                    sparks.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animateFireLoop);
+        }
+        animateFireLoop();
+
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+
+            // Spawn realistic flames on move
+            for(let i = 0; i < 3; i++) {
+                flames.push(new Flame(
+                    posX + (Math.random() - 0.5) * 10,
+                    posY + (Math.random() - 0.5) * 10
+                ));
+            }
+
+            // Occasionally spawn sparks
+            if (Math.random() > 0.7) {
+                sparks.push(new Spark(posX, posY));
+            }
+
+            // Slightly delayed follower
+            gsap.to(cursorOutline, {
+                x: posX,
+                y: posY,
+                duration: 0.15
+            });
+        });
+
+        hoverables.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                document.body.classList.add('hovering');
+                if (el.dataset.cursor === 'magnetic') {
+                    gsap.to(cursorOutline, { scale: 1.5 });
+                }
+            });
+            el.addEventListener('mouseleave', () => {
+                document.body.classList.remove('hovering');
+                gsap.to(cursorOutline, { scale: 1 });
+                gsap.to(el, { x: 0, y: 0 });
+            });
+
+            if (el.dataset.cursor === 'magnetic') {
+                el.addEventListener('mousemove', (e) => {
+                    const rect = el.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    gsap.to(el, { x: x * 0.3, y: y * 0.3, duration: 0.3 });
+                });
+            }
+        });
+
+        // 3. Embers Canvas Background (Fire Sparks)
+        const canvas = document.getElementById('emberCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let embers = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Ember {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = height + Math.random() * 100;
+                this.size = Math.random() * 3 + 1;
+                this.speedY = Math.random() * 2 + 1;
+                this.speedX = (Math.random() - 0.5) * 1.5;
+                this.opacity = Math.random() * 0.5 + 0.5;
+                this.fadeRate = Math.random() * 0.01 + 0.005;
+                // Mix of Gold and Red
+                this.color = Math.random() > 0.5 ? '255, 193, 7' : '211, 47, 47';
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX + Math.sin(this.y * 0.01) * 0.5;
+                this.opacity -= this.fadeRate;
+
+                if (this.opacity <= 0 || this.y < -50) {
+                    this.reset();
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${this.color}, ${this.opacity})`;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = `rgba(${this.color}, 0.8)`;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function initEmbers() {
+            // Reduce ember count on mobile for better performance
+            const emberCount = window.innerWidth < 768 ? 30 : 60;
+            for(let i = 0; i < emberCount; i++) {
+                embers.push(new Ember());
+            }
+        }
+
+        function animateEmbers() {
+            ctx.clearRect(0, 0, width, height);
+            embers.forEach(ember => {
+                ember.update();
+                ember.draw();
+            });
+            requestAnimationFrame(animateEmbers);
+        }
+
+        initEmbers();
+        animateEmbers();
+
+        // 4. Scroll Animations
+
+        // Counter Animation
+        gsap.utils.toArray('.counter').forEach(counter => {
+            ScrollTrigger.create({
+                trigger: counter,
+                start: "top 85%",
+                once: true,
+                onEnter: () => {
+                    const target = parseInt(counter.dataset.target);
+                    gsap.to(counter, {
+                        innerHTML: target,
+                        duration: 2,
+                        snap: { innerHTML: 1 }
+                    });
+                }
+            });
+        });
+
+        // Menu Items Fade In - UPDATED Selector
+        gsap.utils.toArray('.menu-category').forEach((category, i) => {
+            gsap.from(category, {
+                y: 50,
+                opacity: 0,
+                duration: 0.8,
+                delay: i * 0.1,
+                scrollTrigger: {
+                    trigger: category,
+                    start: "top 80%"
+                }
+            });
+        });
+
+        // 5. Form Handling
+        document.getElementById('cateringForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            const status = document.getElementById('formStatus');
+
+            btn.innerText = "SENDING...";
+            btn.classList.add('bg-white', 'text-grill-red');
+
+            setTimeout(() => {
+                btn.innerText = "REQUEST SENT";
+                status.style.opacity = '1';
+                e.target.reset();
+
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove('bg-white', 'text-grill-red');
+                    status.style.opacity = '0';
+                }, 3000);
+            }, 1500);
+        });
+
+        // Mobile Menu
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navMenu = document.getElementById('navMenu');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            const isOpen = navMenu.classList.contains('mobile-menu-open');
+
+            if (isOpen) {
+                navMenu.classList.remove('mobile-menu-open');
+                navMenu.classList.add('hidden');
+                navMenu.classList.remove('flex');
+            } else {
+                navMenu.classList.add('mobile-menu-open');
+                navMenu.classList.remove('hidden');
+                navMenu.classList.add('flex');
+            }
+        });
+
+        // Close mobile menu when clicking a link
+        navMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 768) {
+                    navMenu.classList.remove('mobile-menu-open');
+                    navMenu.classList.add('hidden');
+                    navMenu.classList.remove('flex');
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>

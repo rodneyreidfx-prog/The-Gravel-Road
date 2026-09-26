@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background shield shape -->
+  <path d="M32 2 L58 12 L58 35 Q58 52 32 62 Q6 52 6 35 L6 12 Z" fill="#111111" stroke="#FFC107" stroke-width="2"/>
+
+  <!-- Inner gold border -->
+  <path d="M32 6 L54 14 L54 34 Q54 48 32 57 Q10 48 10 34 L10 14 Z" fill="none" stroke="#FFC107" stroke-width="1" opacity="0.5"/>
+
+  <!-- Mountains/trees silhouette -->
+  <path d="M14 38 L22 28 L28 34 L32 26 L36 34 L42 28 L50 38 Z" fill="#1a472a"/>
+  <circle cx="32" cy="22" r="4" fill="#FFC107" opacity="0.8"/>
+
+  <!-- Road/ground -->
+  <ellipse cx="32" cy="42" rx="16" ry="4" fill="#8B4513"/>
+
+  <!-- Flames at bottom -->
+  <path d="M18 48 Q20 44 22 48 Q24 42 26 48 Q28 44 30 48 L30 54 L18 54 Z" fill="#D32F2F"/>
+  <path d="M34 48 Q36 44 38 48 Q40 42 42 48 Q44 44 46 48 L46 54 L34 54 Z" fill="#D32F2F"/>
+  <path d="M20 50 Q22 46 24 50 Q26 44 28 50 L28 54 L20 54 Z" fill="#FFC107"/>
+  <path d="M36 50 Q38 46 40 50 Q42 44 44 50 L44 54 L36 54 Z" fill="#FFC107"/>
+
+  <!-- GR text -->
+  <text x="32" y="20" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="10" font-weight="bold" fill="#FFC107">GR</text>
+</svg>
